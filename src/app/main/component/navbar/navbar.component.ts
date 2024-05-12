@@ -11,6 +11,8 @@ import { AuthService } from '../../../services/auth.service';
 import { ButtonModule } from 'primeng/button';
 
 import { DialogModule } from 'primeng/dialog';
+import { MenuService } from '../../../services/menu.service';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-navbar',
@@ -26,98 +28,44 @@ import { DialogModule } from 'primeng/dialog';
     RouterLink,
     ButtonModule,
     DialogModule,
+    FormsModule,
+    ReactiveFormsModule,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
   menus: MenuItem[] | undefined;
-  login = computed(() => {
-    if (this.auth.login()) {
-      this.menus = [
-        {
-          label: 'Accueil',
-          icon: 'pi pi-home',
-          command: () => {
-            this.router.navigate(['/index']);
-          },
-        },
-        {
-          label: 'Réglages',
-          icon: 'pi pi-cog',
-          command: () => {
-            this.router.navigate(['/settings']);
-          },
-        },
-        {
-          label: 'Projects',
-          icon: 'pi pi-search',
-          items: [
-            {
-              label: 'Core',
-              icon: 'pi pi-bolt',
-              shortcut: '⌘+S',
-            },
-            {
-              label: 'Blocks',
-              icon: 'pi pi-server',
-              shortcut: '⌘+B',
-            },
-            {
-              label: 'UI Kit',
-              icon: 'pi pi-pencil',
-              shortcut: '⌘+U',
-            },
-            {
-              separator: true,
-            },
-            {
-              label: 'Templates',
-              icon: 'pi pi-palette',
-              items: [
-                {
-                  label: 'Apollo',
-                  icon: 'pi pi-palette',
-                  badge: '2',
-                },
-                {
-                  label: 'Ultima',
-                  icon: 'pi pi-palette',
-                  badge: '3',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: 'Contact',
-          icon: 'pi pi-envelope',
-          badge: '3',
-          url: 'https://angular.io/',
-        },
-      ];
+  loginStatus = computed(() => {
+    if (this._auth.login()) {
+      this.menus = this._menu.menus
       return true;
     } else {
-      this.menus = [
-        {
-          label: 'Accueil',
-          icon: 'pi pi-home',
-          command: () => {
-            this.router.navigate(['/index']);
-          },
-        },
-      ];
+      this.menus = this._menu.guestMenus;
       return false;
     }
   });
 
-  constructor(private router: Router, private auth: AuthService) {}
+  constructor(
+    private router: Router,
+    private _auth: AuthService,
+    private _menu: MenuService,
+    private fb: FormBuilder,
+  ) {}
 
   // Login
   loginModal: boolean = false;
+  loginForm = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', Validators.required),
+  })
 
   showLoginModal() {
     this.loginModal = true;
+  }
+
+  login(){
+    console.log(this.loginForm.value)
   }
 
   // Register
@@ -127,3 +75,7 @@ export class NavbarComponent {
     this.registerModal = true;
   }
 }
+
+// TODO: loginForm
+// TODO: RegisterForm
+// TODO: Forgotten password Form
